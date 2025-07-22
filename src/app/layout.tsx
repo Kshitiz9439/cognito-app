@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from '@/components/app-layout';
+import { Footer } from '@/components/footer'; // ✅ add this
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AppLayout>
           {children}
+          <Footer /> {/* ✅ this shows your name at the bottom */}
         </AppLayout>
         <Toaster />
       </body>
