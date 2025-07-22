@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { chat } from '@/ai/flows/chat-interface';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -74,7 +73,18 @@ export default function ChatPage() {
     form.reset();
 
     try {
-      const result = await chat({ prompt: userMessage });
+      const res = await fetch('/api/genkit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: userMessage }),
+      });
+
+      if (!res.ok) throw new Error('Failed to fetch AI response');
+
+      const result = await res.json();
+
       if (result.response) {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -126,7 +136,7 @@ export default function ChatPage() {
           ) : (
             <div className="space-y-8">
               {messages.map((message) => (
-                 <div
+                <div
                   key={message.id}
                   className={cn(
                     "flex items-start gap-4 animate-fade-in",
@@ -134,84 +144,84 @@ export default function ChatPage() {
                   )}
                 >
                   {message.role === 'bot' && (
-                     <Avatar className="h-9 w-9 shadow-sm">
-                      <AvatarFallback className="bg-primary/20"><Bot className="h-5 w-5 text-primary"/></AvatarFallback>
+                    <Avatar className="h-9 w-9 shadow-sm">
+                      <AvatarFallback className="bg-primary/20"><Bot className="h-5 w-5 text-primary" /></AvatarFallback>
                     </Avatar>
                   )}
                   <div className={cn(
-                      "rounded-2xl p-4 shadow-md max-w-lg",
-                      message.role === 'user'
-                        ? 'bg-slate-800 text-white rounded-br-none'
-                        : 'bg-white text-slate-800 rounded-bl-none'
-                    )}>
-                      {message.isLoading ? (
-                         <div className="flex flex-col items-center">
-                            <p className="text-xs text-muted-foreground mb-2">Cognito is thinking...</p>
-                            <div className="flex items-center justify-center gap-1.5">
-                              <span className="h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:-0.3s]"></span>
-                              <span className="h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:-0.15s]"></span>
-                              <span className="h-2 w-2 rounded-full bg-primary/50 animate-bounce"></span>
-                            </div>
+                    "rounded-2xl p-4 shadow-md max-w-lg",
+                    message.role === 'user'
+                      ? 'bg-slate-800 text-white rounded-br-none'
+                      : 'bg-white text-slate-800 rounded-bl-none'
+                  )}>
+                    {message.isLoading ? (
+                      <div className="flex flex-col items-center">
+                        <p className="text-xs text-muted-foreground mb-2">Cognito is thinking...</p>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:-0.3s]"></span>
+                          <span className="h-2 w-2 rounded-full bg-primary/50 animate-bounce [animation-delay:-0.15s]"></span>
+                          <span className="h-2 w-2 rounded-full bg-primary/50 animate-bounce"></span>
                         </div>
-                      ) : (
-                        <p className="whitespace-pre-wrap">{message.text}</p>
-                      )}
+                      </div>
+                    ) : (
+                      <p className="whitespace-pre-wrap">{message.text}</p>
+                    )}
                   </div>
-                   {message.role === 'user' && (
-                     <Avatar className="h-9 w-9 shadow-sm">
-                      <AvatarFallback><User className="h-5 w-5"/></AvatarFallback>
+                  {message.role === 'user' && (
+                    <Avatar className="h-9 w-9 shadow-sm">
+                      <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
                     </Avatar>
                   )}
                 </div>
               ))}
-               <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} />
             </div>
           )}
         </div>
       </main>
-       <footer className="p-4 bg-background/80 backdrop-blur-sm border-t border-gray-200">
-          <div className="mx-auto max-w-3xl">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
-                <FormField
-                  control={form.control}
-                  name="prompt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <Textarea
-                            placeholder="Message Cognito..."
-                            className="min-h-[52px] resize-none rounded-2xl border-gray-200 bg-white p-4 pr-16 shadow-sm focus:border-primary focus:ring-primary"
-                            {...field}
-                            disabled={isSubmitting}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                if (!isSubmitting && form.getValues('prompt')) {
-                                  form.handleSubmit(onSubmit)();
-                                }
+      <footer className="p-4 bg-background/80 backdrop-blur-sm border-t border-gray-200">
+        <div className="mx-auto max-w-3xl">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="relative">
+              <FormField
+                control={form.control}
+                name="prompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="relative">
+                        <Textarea
+                          placeholder="Message Cognito..."
+                          className="min-h-[52px] resize-none rounded-2xl border-gray-200 bg-white p-4 pr-16 shadow-sm focus:border-primary focus:ring-primary"
+                          {...field}
+                          disabled={isSubmitting}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              if (!isSubmitting && form.getValues('prompt')) {
+                                form.handleSubmit(onSubmit)();
                               }
-                            }}
-                          />
-                          <Button 
-                            type="submit" 
-                            size="icon" 
-                            className="absolute bottom-3 right-3 h-8 w-8 rounded-lg bg-primary text-primary-foreground transition-transform hover:scale-110 hover:bg-primary/90" 
-                            disabled={isSubmitting || !form.getValues('prompt')}
-                          >
-                            <Send className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage className="pl-4" />
-                    </FormItem>
-                  )}
-                />
-              </form>
-            </Form>
-          </div>
-       </footer>
+                            }
+                          }}
+                        />
+                        <Button 
+                          type="submit" 
+                          size="icon" 
+                          className="absolute bottom-3 right-3 h-8 w-8 rounded-lg bg-primary text-primary-foreground transition-transform hover:scale-110 hover:bg-primary/90" 
+                          disabled={isSubmitting || !form.getValues('prompt')}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="pl-4" />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+      </footer>
     </div>
   );
 }
