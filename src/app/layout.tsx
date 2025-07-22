@@ -3,7 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AppLayout } from '@/components/app-layout';
-import { Footer } from '@/components/footer'; // ✅ add this
+import Footer from '@/components/footer'; // ✅ default import
+
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
